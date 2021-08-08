@@ -13,4 +13,4 @@ export default function ToDoList() {
 	)
 };
 
-ToDoList.auth = true
+ToDoList.auth = true;
