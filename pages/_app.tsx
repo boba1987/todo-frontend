@@ -1,13 +1,23 @@
-import { Provider, signIn, useSession } from 'next-auth/client';
+import { Provider, signIn, useSession, signOut } from 'next-auth/client';
 import React, { useEffect } from 'react';
 import axios from 'axios';
+
+function handleAuthError(req: any) {
+    switch (req) {
+    case 401:
+        signOut();
+        signIn();
+        return req;
+    default:
+        console.log('Request Success');
+        return req;
+    }
+}
 
 // For GET requests
 axios.interceptors.request.use(
     (req) => {
-        // Add configurations here
-        console.log('Get Successfully');
-        return req;
+        return handleAuthError(req);
     },
     (err) => {
         return Promise.reject(err);
@@ -16,12 +26,8 @@ axios.interceptors.request.use(
 
 // For POST requests
 axios.interceptors.response.use(
-    (res) => {
-        // Add configurations here
-        if (res.status === 201) {
-            console.log('Posted Successfully');
-        }
-        return res;
+    (req) => {
+        return handleAuthError(req);
     },
     (err) => {
         return Promise.reject(err);
