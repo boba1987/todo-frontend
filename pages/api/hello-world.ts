@@ -1,9 +1,9 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import type { NextApiRequest, NextApiResponse } from 'next'
+import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default function handler(
-	req: NextApiRequest,
-	res: NextApiResponse<String>
+    req: NextApiRequest,
+    res: NextApiResponse<String>
 ) {
-	res.status(200).send('Hello world!');
+    res.status(200).send('Hello world!');
 }
