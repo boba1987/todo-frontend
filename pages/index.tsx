@@ -7,6 +7,8 @@ export default function Home() {
 			Welcome to TODO application
             <br />
             <Link href="/sign-in">Sign in</Link>
+            <br />
+            <Link href="/sign-up">Sign up</Link>
         </>
     );
 }

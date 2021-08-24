@@ -7,45 +7,36 @@ export default NextAuth({
     providers: [
         Providers.Credentials({
             name: 'Credentials',
-            async authorize(credentials: Record<'password' | 'username', string>, req: NextApiRequest): Promise<User | null> {
-                // Add logic here to look up the user from the credentials supplied
-                const users = [
-                    { 
-                        id: 1,
-                        userName: 'boba',
-                        fullName: 'Boba Dj',
-                        email: 'boba@example.com',
-                        roles: [
-                            UserRoles.Admin,
-                            UserRoles.RegularUser
-                        ],  
-                        accessToken: 'aysfy8ho282gqtbfwioG08we98sag98sibsbgaw4btkmxzbc',
-                        refreshToken: '98y89asg9usbgnq0238risjdosbdafibuig'
-                    },
-                    { 
-                        id: 2,
-                        userName: 'jsmith',
-                        fullName: 'J Smith',
-                        email: 'jsmith@example.com',
-                        roles: [
-                            UserRoles.RegularUser
-                        ],
-                        accessToken: 'aysfy8ho282gqtbfwioG08we98sag98sibsbgaw4btkmxzbc',
-                        refreshToken: '98y89asg9usbgnq0238risjdosbdafibuig'
+            async authorize(credentials: Record<'password' | 'email', string>, req: NextApiRequest): Promise<User | null> {
+                try {
+                    // Add logic here to look up the user from the credentials supplied
+                    const payload = {...credentials, strategy: process.env.AUTH_STRATEGY};
+                    const response = await fetch(`${process.env.BACKEND_URL}/authentication`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.status == 401) {
+                        return null;
                     }
-                ];
 
-                const userFound = users.find(user => credentials.username === user.userName );
+                    const {user} = await response.json();
 
-                if (userFound) {
-				  // Any object returned will be saved in `user` property of the JWT
-                    return userFound;
-                } else {
-				  // If you return null or false then the credentials will be rejected
+                    if (user) {
+                    // Any object returned will be saved in `user` property of the JWT
+                        return user;
+                    } else {
+                    // If you return null or false then the credentials will be rejected
+                        return null;
+                    // You can also Reject this callback with an Error or with a URL:
+                    // throw new Error('error message') // Redirect to error page
+                    // throw '/path/to/redirect'        // Redirect to a URL
+                    }
+                } catch (error) {
                     return null;
-				  // You can also Reject this callback with an Error or with a URL:
-				  // throw new Error('error message') // Redirect to error page
-				  // throw '/path/to/redirect'        // Redirect to a URL
                 }
             }
         })

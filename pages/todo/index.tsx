@@ -6,8 +6,8 @@ export default function ToDoList() {
 
     return (
         <>
-			Welcome {session?.user?.userName}. Roles: {session?.user?.roles.join(', ')} <button onClick={() => signOut({callbackUrl: '/'})}>Sign out</button> <br />
-            { session?.user?.roles.includes(UserRoles.Admin) && <><button>Edit list as admin</button> <br /></>}
+			Welcome {session?.user?.email}. { session?.user.roles && <>Roles: {session?.user.roles?.join(', ')}</>} <button onClick={() => signOut({callbackUrl: '/'})}>Sign out</button> <br />
+            { session?.user.roles?.includes(UserRoles.Admin) && <><button>Edit list as admin</button> <br /></>}
 			This is your todo list:
         </>
     );
