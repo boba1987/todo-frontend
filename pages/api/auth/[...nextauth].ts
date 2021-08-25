@@ -23,7 +23,7 @@ export default NextAuth({
                         return null;
                     }
 
-                    const {user} = await response.json();
+                    const user = await response.json();
 
                     if (user) {
                     // Any object returned will be saved in `user` property of the JWT
@@ -47,25 +47,23 @@ export default NextAuth({
                 ? url
                 : `${baseUrl}${url}`;
         },
-        async session(session, token) {
+        async session(session, token: any) {
             session.accessToken = token.accessToken;
-            session.refreshToken = token.refreshToken;
+            session.expires = new Date(token.authentication.payload.exp * 1000).toISOString();
             session.user = token.user as User;
             return Promise.resolve(session);
         },
-        async jwt(token, user, account) {
-            if (account?.accessToken) {
-                token.accessToken = account.accessToken;
-            }
-            if (account?.refreshToken) {
-                token.refreshToken = account.refreshToken;
-            }
-			
-            user && (token.user = user);
+        async jwt(token, user) {
+            user && (token = {...token, ...user});
             return Promise.resolve(token);
         }
     },
     pages: {
         signIn: '/sign-in'
-    }
+    },
+    session: {
+        maxAge: 24 * 60 * 60,
+        jwt: true
+    },
+    debug: true
 });
