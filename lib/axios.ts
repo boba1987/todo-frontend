@@ -1,5 +1,5 @@
 import { signIn, signOut } from 'next-auth/client';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 
 export function handleError(status: number) {
     switch (status) {
@@ -11,12 +11,12 @@ export function handleError(status: number) {
 }
 
 axios.interceptors.response.use(
-    (res) => {
-        return res;
+    (response: AxiosResponse) => {
+        return response;
     },
     (err) => {
         handleError(err.response.status);
-        return err;
+        return Promise.reject(err.response);
     }
 );
 

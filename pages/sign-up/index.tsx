@@ -1,26 +1,23 @@
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import React, { SyntheticEvent, useState } from 'react';
 import { Credentials } from '../../types/auth.d';
 import axios from 'axios';
 import { BadRequest } from '@feathersjs/errors';
+import { signIn } from 'next-auth/client';
 
 export default function SignIn() {
-    const router = useRouter();
     const [error, setError] = useState('');
 
-    const onSubmit = (event: SyntheticEvent): void => {
+    const onSubmit = async (event: SyntheticEvent): Promise<void> => {
         event.preventDefault();
         const {email, password} = event.target as typeof event.target & Credentials;
-        axios
-            .post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users`, {email: email.value, password: password.value})
-            .then((res: any) => {
-                if (res.response?.status >= 400) throw new Error(res.response.data.errors.map((error: BadRequest) => error.message).join('\n'));
-                router.push('/todo');
-            })
-            .catch( err => {
-                setError(err.message);
-            });
+
+        try {
+            await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users`, {email: email.value, password: password.value});
+            signIn();
+        } catch (error) {
+            setError(error.data.errors.map((error: BadRequest)=> error.message).join('\n'));
+        }
     };
 
     return (
@@ -37,8 +34,8 @@ export default function SignIn() {
                 </label>
                 <button type='submit'>Sign up</button>
             </form>
-            {error && <>{ error }<br /></>}
-            Already have account? <Link href="/sign-in">Sign in</Link>
+            {error && <>{ error } <br /></>}
+            <p>Already have account? <Link href="/sign-in">Sign in</Link></p>
         </>
     );
 }
