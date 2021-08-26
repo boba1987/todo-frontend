@@ -1,7 +1,6 @@
 import { NextApiRequest } from 'next';
-import NextAuth from 'next-auth';
+import NextAuth, { User } from 'next-auth';
 import Providers from 'next-auth/providers';
-import {User, UserRoles} from '../../../types/user.d';
 
 export default NextAuth({
     providers: [
