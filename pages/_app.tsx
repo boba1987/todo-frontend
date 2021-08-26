@@ -1,38 +1,7 @@
-import { Provider, signIn, useSession, signOut } from 'next-auth/client';
-import React, { useEffect } from 'react';
-import axios from 'axios';
-
-function handleAuthError(req: any) {
-    switch (req) {
-    case 401:
-        signOut();
-        signIn();
-        return req;
-    default:
-        console.log('Request Success');
-        return req;
-    }
-}
-
-// For GET requests
-axios.interceptors.request.use(
-    (req) => {
-        return handleAuthError(req);
-    },
-    (err) => {
-        return Promise.reject(err);
-    }
-);
-
-// For POST requests
-axios.interceptors.response.use(
-    (req) => {
-        return handleAuthError(req);
-    },
-    (err) => {
-        return Promise.reject(err);
-    }
-);
+import '../lib/axios';
+import { Provider } from 'next-auth/client';
+import React from 'react';
+import Auth from '../lib/authentication';
 
 export default function MyApp(
     { Component, pageProps }: { Component: any, pageProps: any }
@@ -48,21 +17,4 @@ export default function MyApp(
             )}
         </Provider>
     );
-}
-
-function Auth({ children }: { children: JSX.Element }) {
-    const [session, loading] = useSession();
-    const isUser = !!session?.user;
-    useEffect(() => {
-        if (loading) return; // Do nothing while loading
-        if (!isUser) signIn(); // If not authenticated, force log in
-    }, [isUser, loading]);
-
-    if (isUser) {
-        return children;
-    }
-
-    // Session is being fetched, or no user.
-    // If no user, useEffect() will redirect.
-    return <div>Loading...</div>;
 }

@@ -7,6 +7,7 @@ declare module 'next-auth' {
 
 	import {User} from './user';
 	interface Session {
+		accessToken: string
 		user: User
 	}
 }
