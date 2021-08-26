@@ -1,7 +1,7 @@
-import { signIn, signOut, getSession } from 'next-auth/client';
+import { signIn, signOut } from 'next-auth/client';
 import axios from 'axios';
 
-export function handleAuthError(status: number) {
+export function handleError(status: number) {
     switch (status) {
     case 401:
         signOut();
@@ -10,19 +10,14 @@ export function handleAuthError(status: number) {
     }
 }
 
-(async ()=> {
-    const session = await getSession();
-    axios.defaults.headers.common = {'Authorization': `Bearer ${session?.accessToken}`};
-	
-    axios.interceptors.response.use(
-        (res) => {
-            return res;
-        },
-        (err) => {
-            handleAuthError(err.response.status);
-            return err;
-        }
-    );
-})();
+axios.interceptors.response.use(
+    (res) => {
+        return res;
+    },
+    (err) => {
+        handleError(err.response.status);
+        return err;
+    }
+);
 
 export default axios;

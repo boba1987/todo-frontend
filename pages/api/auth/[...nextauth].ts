@@ -10,7 +10,7 @@ export default NextAuth({
                 try {
                     // Add logic here to look up the user from the credentials supplied
                     const payload = {...credentials, strategy: process.env.AUTH_STRATEGY};
-                    const response = await fetch(`${process.env.BACKEND_URL}/authentication`, {
+                    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/authentication`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'

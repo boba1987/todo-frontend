@@ -15,6 +15,7 @@ function Auth({ children }: { children: JSX.Element }) {
     }, [isUser, loading, session]);
 
     if (isUser) {
+        axios.defaults.headers.common = {'Authorization': `Bearer ${session?.accessToken}`};
         return children;
     }
 

@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@feathersjs/errors": "^4.5.11",
     "axios": "^0.21.1",
     "next": "11.0.1",
     "next-auth": "^3.27.3",

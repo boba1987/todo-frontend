@@ -1,6 +1,7 @@
 import { getCsrfToken, CtxOrReq, signIn } from 'next-auth/client';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { SyntheticEvent } from 'react';
+import React, { SyntheticEvent } from 'react';
 import { Credentials } from '../../types/auth.d';
 
 export default function SignIn({ csrfToken }: {csrfToken: string}) {
@@ -38,6 +39,7 @@ export default function SignIn({ csrfToken }: {csrfToken: string}) {
             {
                 error && errorCodes[error as string]
             }
+            <p>Dont have account? <Link href="/sign-up">Sign up</Link></p>
         </>
     );
 }
