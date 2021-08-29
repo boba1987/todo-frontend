@@ -8,6 +8,7 @@ import { DialogContent, DialogTitle } from '@material-ui/core';
 import { AddTodoForm } from './addTodoForm';
 import axios from 'axios';
 
+const SELECT_TODO_FIELDS = ['id', 'done', 'title', 'description'];
 interface TodoItemInterface {
     id: number,
     done: boolean,
@@ -25,8 +26,9 @@ export default function ToDoList(props: {todos: {data: TodoItemInterface[]}}) {
 
     const handleSubmit = async (fields: {name: string, value: any}[]) => {
         try {
-            const todo = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo`, fields);
-            props.todos.data.push(todo.data as TodoItemInterface);
+            await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo`, fields);
+            const {data: todos} = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo?${selectDBProps(SELECT_TODO_FIELDS)}&$sort[createdAt]=-1`);
+            props.todos.data = todos.data;
         } catch(error) {
             console.error(error);
         }
@@ -34,15 +36,13 @@ export default function ToDoList(props: {todos: {data: TodoItemInterface[]}}) {
         handleClose();
     };
 
-    const todoItem = (item: TodoItemInterface) => {
-        const itemKeys = Object.keys(item) as Array<keyof typeof item>;
-
-        return <>
-            {
-                itemKeys.map((key, index) => <p key={index}>{key}: {`${item[key]}`}</p>)
-            }
+    const todoItem = (item: TodoItemInterface) =>
+        <>
+            <p>id: {item.id}</p>
+            <p>Title: {item.title}</p>
+            <p>Description: {item.description}</p>
+            <p>Done: {item.done.toString()}</p>
         </>;
-    }; 
 
     return (
         <>
@@ -78,7 +78,7 @@ export async function getServerSideProps(context: NextPageContext) {
     };
 
     try {
-        const todos = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo?${selectDBProps(['id', 'done', 'title', 'description'])}`, {
+        const todos = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo?${selectDBProps(SELECT_TODO_FIELDS)}&$sort[createdAt]=-1`, {
             headers: {
                 Authorization: `Bearer ${session?.accessToken}`
             }
