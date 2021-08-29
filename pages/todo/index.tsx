@@ -2,6 +2,10 @@ import { signOut, useSession, getSession } from 'next-auth/client';
 import { UserRoles } from '../../types/user.d';
 import type { NextPageContext } from 'next';
 import { selectDBProps } from '../../lib/helpers';
+import Dialog from '@material-ui/core/Dialog';
+import React, { useState } from 'react';
+import { DialogContent, DialogTitle } from '@material-ui/core';
+import { AddTodoForm } from './addTodoForm';
 
 interface TodoItemInterface {
     id: number,
@@ -12,6 +16,19 @@ interface TodoItemInterface {
 
 export default function ToDoList(props: {todos: {data: TodoItemInterface[]}}) {
     const [session] = useSession();
+    const [open, setOpen] = useState(false);
+
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+    
+    const handleClose = () => {
+        setOpen(false);
+    };
+
+    const handleSubmit = (fields: {name: string, value: any}[]) => {
+        console.log(fields);
+    };
 
     const todoItem = (item: TodoItemInterface) => {
         const itemKeys = Object.keys(item) as Array<keyof typeof item>;
@@ -27,12 +44,23 @@ export default function ToDoList(props: {todos: {data: TodoItemInterface[]}}) {
         <>
 			Welcome {session?.user?.email}. { session?.user.roles && <>Roles: {session?.user.roles?.join(', ')}</>} <button onClick={() => signOut({callbackUrl: '/'})}>Sign out</button> <br />
             { session?.user.roles?.includes(UserRoles.Admin) && <><button>Edit list as admin</button> <br /></>}
+            <button onClick={handleClickOpen}>Add todo</button>
+            <hr />
 			This is your todo list: 
             <ul>
                 {
                     props.todos.data.map((item: TodoItemInterface, index: number) => <li key={index}>{todoItem(item)}</li>)
                 }
             </ul>
+
+            <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+                <DialogTitle id="form-dialog-title">Add todo</DialogTitle>
+                <DialogContent>
+                    {
+                        <AddTodoForm onSubmit={handleSubmit} handleClose={handleClose}/>
+                    }
+                </DialogContent>
+            </Dialog>
         </>
     );
 };
