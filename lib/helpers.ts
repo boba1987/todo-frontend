@@ -1,0 +1,1 @@
+export const selectDBProps = (props: string[]) => props.map(prop => `$select[]=${prop}`).join('&');

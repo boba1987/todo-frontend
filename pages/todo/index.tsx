@@ -1,15 +1,24 @@
 import { signOut, useSession, getSession } from 'next-auth/client';
 import { UserRoles } from '../../types/user.d';
 import type { NextPageContext } from 'next';
-export default function ToDoList(props: any) {
+import { selectDBProps } from '../../lib/helpers';
+
+interface TodoItemInterface {
+    id: number,
+    done: boolean,
+    title: string,
+    description: string
+};
+
+export default function ToDoList(props: {todos: {data: TodoItemInterface[]}}) {
     const [session] = useSession();
 
-    const todoItem = (item: any) => {
-        const itemKeys = Object.keys(item);
+    const todoItem = (item: TodoItemInterface) => {
+        const itemKeys = Object.keys(item) as Array<keyof typeof item>;
 
         return <>
             {
-                itemKeys.map((key: string) => <p key={key}>{key}: {`${item[key]}`}</p>)
+                itemKeys.map((key, index) => <p key={index}>{key}: {`${item[key]}`}</p>)
             }
         </>;
     }; 
@@ -21,7 +30,7 @@ export default function ToDoList(props: any) {
 			This is your todo list: 
             <ul>
                 {
-                    props.todos.data.map((item: any) => <li key={item.id}>{todoItem(item)}</li>)
+                    props.todos.data.map((item: TodoItemInterface, index: number) => <li key={index}>{todoItem(item)}</li>)
                 }
             </ul>
         </>
@@ -37,7 +46,7 @@ export async function getServerSideProps(context: NextPageContext) {
     };
 
     try {
-        const todos = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo`, {
+        const todos = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo?${selectDBProps(['id', 'done', 'title', 'description'])}`, {
             headers: {
                 Authorization: `Bearer ${session?.accessToken}`
             }
