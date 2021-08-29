@@ -6,7 +6,12 @@ export function AddTodoForm(props: {onSubmit: (fields: any) => void, handleClose
     const onSubmit = (event: any) => {
         event.preventDefault();
         props.onSubmit(
-            [...event.target.elements].map((field: any) => field.name ? {name: field.name, value: field.value} : false).filter(Boolean)
+            [...event.target].reduce((accumulator, current)=> {
+                if (!current.name) return accumulator;
+
+                accumulator[current.name] = current.value;
+                return accumulator;
+            }, {})
         );
     };
 

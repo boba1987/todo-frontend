@@ -6,6 +6,7 @@ import Dialog from '@material-ui/core/Dialog';
 import React, { useState } from 'react';
 import { DialogContent, DialogTitle } from '@material-ui/core';
 import { AddTodoForm } from './addTodoForm';
+import axios from 'axios';
 
 interface TodoItemInterface {
     id: number,
@@ -17,17 +18,20 @@ interface TodoItemInterface {
 export default function ToDoList(props: {todos: {data: TodoItemInterface[]}}) {
     const [session] = useSession();
     const [open, setOpen] = useState(false);
-
-    const handleClickOpen = () => {
-        setOpen(true);
-    };
     
     const handleClose = () => {
         setOpen(false);
     };
 
-    const handleSubmit = (fields: {name: string, value: any}[]) => {
-        console.log(fields);
+    const handleSubmit = async (fields: {name: string, value: any}[]) => {
+        try {
+            const todo = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo`, fields);
+            props.todos.data.push(todo.data as TodoItemInterface);
+        } catch(error) {
+            console.error(error);
+        }
+
+        handleClose();
     };
 
     const todoItem = (item: TodoItemInterface) => {
@@ -44,7 +48,7 @@ export default function ToDoList(props: {todos: {data: TodoItemInterface[]}}) {
         <>
 			Welcome {session?.user?.email}. { session?.user.roles && <>Roles: {session?.user.roles?.join(', ')}</>} <button onClick={() => signOut({callbackUrl: '/'})}>Sign out</button> <br />
             { session?.user.roles?.includes(UserRoles.Admin) && <><button>Edit list as admin</button> <br /></>}
-            <button onClick={handleClickOpen}>Add todo</button>
+            <button onClick={() => setOpen(true)}>Add todo</button>
             <hr />
 			This is your todo list: 
             <ul>
