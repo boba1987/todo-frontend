@@ -9,6 +9,7 @@ import { AddTodoForm } from './addTodoForm';
 import axios from 'axios';
 
 const SELECT_TODO_FIELDS = ['id', 'done', 'title', 'description'];
+const SORT_ORDER = '$sort[createdAt]=-1';
 interface TodoItemInterface {
     id: number,
     done: boolean,
@@ -29,7 +30,7 @@ export default function ToDoList(props: {todos: {data: TodoItemInterface[]}}) {
     async function handleSubmit (fields: {[key: string]: string}) {
         try {
             await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo`, fields);
-            const {data: todos} = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo?${selectDBProps(SELECT_TODO_FIELDS)}&$sort[createdAt]=-1`);
+            const {data: todos} = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo?${selectDBProps(SELECT_TODO_FIELDS)}&${SORT_ORDER}`);
             props.todos.data = todos.data;
             handleClose();
         } catch(error) {
@@ -52,7 +53,9 @@ export default function ToDoList(props: {todos: {data: TodoItemInterface[]}}) {
 
     return (
         <>
-			Welcome {session?.user?.email}. { session?.user.roles && <>Roles: {session?.user.roles?.join(', ')}</>} <button onClick={() => signOut({callbackUrl: '/'})}>Sign out</button> <br />
+			Welcome {session?.user?.email}. { session?.user.roles && <>Roles: {session?.user.roles?.join(', ')}</>} 
+            <button onClick={() => signOut({callbackUrl: '/'})}>Sign out</button> <br />
+
             { session?.user.roles?.includes(UserRoles.Admin) && <><button>Edit list as admin</button> <br /></>}
             <button onClick={() => setOpen(true)}>Add todo</button>
             <hr />
@@ -84,7 +87,7 @@ export async function getServerSideProps(context: NextPageContext) {
     };
 
     try {
-        const todos = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo?${selectDBProps(SELECT_TODO_FIELDS)}&$sort[createdAt]=-1`, {
+        const todos = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo?${selectDBProps(SELECT_TODO_FIELDS)}&${SORT_ORDER}`, {
             headers: {
                 Authorization: `Bearer ${session?.accessToken}`
             }
