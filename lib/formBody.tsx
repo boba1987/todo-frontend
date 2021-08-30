@@ -15,34 +15,48 @@ interface FieldInterface {
     validator?: (value: string) => boolean | string
 }
 
+interface FormSubmitInterface {
+    values: {[key: string]: string}, 
+    errors: {[key: string]: string}
+}
+
+interface FieldValueInterface {
+    value: string, 
+    name: string
+}
+
 export function FormBody(props: {
-    onSubmit: (fields: {values: {[key: string]: string}, errors: {[key: string]: string}}) => void, 
+    onSubmit: (fields: FormSubmitInterface) => void, 
     handleClose: () => void, 
     errors?: {[key: string]: string},
     fields: FieldInterface[]
 }) {
+    function getFieldValuesAndErrors(fields: FieldValueInterface[]): FormSubmitInterface {
+        return fields.reduce((accumulator: FormSubmitInterface, current: FieldValueInterface)=> {
+            if (!current.name) return accumulator;
+
+            const field = props.fields.find(field => field.name === current.name)!;
+
+            if (field.validator) {
+                try {
+                    field.validator(current.value);
+                } catch (error) {
+                    accumulator.errors = {
+                        ...accumulator.errors,
+                        [current.name]: error
+                    };
+                }
+            }
+
+            accumulator.values[current.name] = current.value;
+            return accumulator;
+        }, {values: {}, errors: {}});
+    }
+
     function onSubmit(event: any) {
         event.preventDefault();
         props.onSubmit(
-            [...event.target].reduce((accumulator, current)=> {
-                if (!current.name) return accumulator;
-
-                const field = props.fields.find(field => field.name === current.name)!;
-
-                if (field.validator) {
-                    try {
-                        field.validator(current.value);
-                    } catch (error) {
-                        accumulator.errors = {
-                            ...accumulator.errors,
-                            [current.name]: error
-                        };
-                    }
-                }
-
-                accumulator.values[current.name] = current.value;
-                return accumulator;
-            }, {values: {}, errors: {}})
+            getFieldValuesAndErrors([...event.target])
         );
     };
 
@@ -63,7 +77,7 @@ export function FormBody(props: {
             }
         };
 
-        return fields.map((field: any, index: number) => (
+        return fields.map((field: FieldInterface, index: number) => (
             <div key={index}>
                 {
                     resolveInputType(field)
