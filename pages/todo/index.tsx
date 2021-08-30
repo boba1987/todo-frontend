@@ -5,7 +5,7 @@ import { selectDBProps } from '../../lib/helpers';
 import Dialog from '@material-ui/core/Dialog';
 import React, { useState } from 'react';
 import { DialogContent, DialogTitle } from '@material-ui/core';
-import { AddTodoForm } from './addTodoForm';
+import { FormBody } from '../../lib/formBody';
 import axios from 'axios';
 
 const SELECT_TODO_FIELDS = ['id', 'done', 'title', 'description'];
@@ -21,24 +21,47 @@ export default function ToDoList(props: {todos: {data: TodoItemInterface[]}}) {
     const [session] = useSession();
     const [open, setOpen] = useState(false);
     const [validationErrors, setValidationErrors] = useState({});
+    const [serverErrors, setServerErrors] = useState([]);
+    const fields = [
+        {
+            id: 'todo-form-title',
+            name:'title',
+            label:'Title',
+            required: true,
+            validator: (value: string) => {
+                if (!value.trim()) throw 'title field is required';
+                return true;
+            }
+        },
+        {
+            id: 'todo-form-description',
+            name: 'description',
+            label:'Description',
+            multiline: true,
+            rows: 4
+        }
+    ];
     
     function handleClose() {
         setOpen(false);
         setValidationErrors({});
+        setServerErrors([]);
     };
 
-    async function handleSubmit (fields: {[key: string]: string}) {
+    async function handleSubmit (fields: {values: {[key: string]: string}, errors: {[key: string]: string}}) {
+        if (Object.keys(fields.errors).length) {
+            setValidationErrors(fields.errors);
+            return;
+        }
+
         try {
-            await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo`, fields);
+            await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo`, fields.values);
             const {data: todos} = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo?${selectDBProps(SELECT_TODO_FIELDS)}&${SORT_ORDER}`);
             props.todos.data = todos.data;
             handleClose();
         } catch(error) {
-            setValidationErrors(
-                error.data.errors.reduce((accumulator: {[key: string]: string}, current: {[key: string]: string}) => {
-                    accumulator[current.path] = current.message;
-                    return accumulator;
-                }, {})
+            setServerErrors(
+                error.data.errors.map((error: {message: String}) => error.message)
             );
         }
     };
@@ -70,7 +93,10 @@ export default function ToDoList(props: {todos: {data: TodoItemInterface[]}}) {
                 <DialogTitle id="form-dialog-title">Add todo</DialogTitle>
                 <DialogContent>
                     {
-                        <AddTodoForm onSubmit={handleSubmit} handleClose={handleClose} errors={validationErrors} />
+                        <FormBody onSubmit={handleSubmit} handleClose={handleClose} errors={validationErrors} fields={fields}/>
+                    }
+                    {
+                        serverErrors && <div style={{color: 'red', maxWidth: 174, textAlign: 'center'}}>{serverErrors}</div>
                     }
                 </DialogContent>
             </Dialog>
