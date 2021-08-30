@@ -19,21 +19,27 @@ interface TodoItemInterface {
 export default function ToDoList(props: {todos: {data: TodoItemInterface[]}}) {
     const [session] = useSession();
     const [open, setOpen] = useState(false);
+    const [validationErrors, setValidationErrors] = useState({});
     
-    const handleClose = () => {
+    function handleClose() {
         setOpen(false);
+        setValidationErrors({});
     };
 
-    const handleSubmit = async (fields: {name: string, value: any}[]) => {
+    async function handleSubmit (fields: {[key: string]: string}) {
         try {
             await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo`, fields);
             const {data: todos} = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo?${selectDBProps(SELECT_TODO_FIELDS)}&$sort[createdAt]=-1`);
             props.todos.data = todos.data;
+            handleClose();
         } catch(error) {
-            console.error(error);
+            setValidationErrors(
+                error.data.errors.reduce((accumulator: {[key: string]: string}, current: {[key: string]: string}) => {
+                    accumulator[current.path] = current.message;
+                    return accumulator;
+                }, {})
+            );
         }
-
-        handleClose();
     };
 
     const todoItem = (item: TodoItemInterface) =>
@@ -61,7 +67,7 @@ export default function ToDoList(props: {todos: {data: TodoItemInterface[]}}) {
                 <DialogTitle id="form-dialog-title">Add todo</DialogTitle>
                 <DialogContent>
                     {
-                        <AddTodoForm onSubmit={handleSubmit} handleClose={handleClose}/>
+                        <AddTodoForm onSubmit={handleSubmit} handleClose={handleClose} errors={validationErrors} />
                     }
                 </DialogContent>
             </Dialog>

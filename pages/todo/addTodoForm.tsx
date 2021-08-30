@@ -2,8 +2,12 @@ import { TextField } from '@material-ui/core';
 import React from 'react';
 import { Button, DialogActions } from '@material-ui/core';
 
-export function AddTodoForm(props: {onSubmit: (fields: any) => void, handleClose: () => void}) {
-    const onSubmit = (event: any) => {
+export function AddTodoForm(props: {
+    onSubmit: (fields: {[key: string]: string}) => void, 
+    handleClose: () => void, 
+    errors?: {[key: string]: string}
+}) {
+    function onSubmit(event: any) {
         event.preventDefault();
         props.onSubmit(
             [...event.target].reduce((accumulator, current)=> {
@@ -18,9 +22,8 @@ export function AddTodoForm(props: {onSubmit: (fields: any) => void, handleClose
     return <>
         <form noValidate autoComplete="off" onSubmit={onSubmit}>
             <div>
-                <TextField id="todo-form-title" name="title" label="Title" />
+                <TextField id="todo-form-title" name="title" label="Title" required error={!!props.errors?.title} helperText={props.errors?.title} />
             </div>
-            <br />
             <div>
                 <TextField id="todo-form-description" name="description" label="Description" multiline rows={4}/>
             </div>
