@@ -2,8 +2,9 @@ import '../lib/axios';
 import { Provider } from 'next-auth/client';
 import React from 'react';
 import Auth from '../lib/authentication';
+import { wrapper } from '../redux/reducers/store';
 
-export default function MyApp(
+function MyApp(
     { Component, pageProps }: { Component: any, pageProps: any }
 ): JSX.Element {
     return (
@@ -18,3 +19,5 @@ export default function MyApp(
         </Provider>
     );
 }
+
+export default wrapper.withRedux(MyApp);

@@ -7,10 +7,12 @@ import React, { useState } from 'react';
 import { DialogContent, DialogTitle } from '@material-ui/core';
 import { FormBody } from '../../lib/formBody';
 import axios from 'axios';
+import { connect } from 'react-redux';
+import { saveTodo } from '../../redux/actions';
 
 const SELECT_TODO_FIELDS = ['id', 'done', 'title', 'description'];
 const SORT_ORDER = '$sort[createdAt]=-1';
-interface TodoItemInterface {
+export interface TodoItemInterface {
     id: number,
     done: boolean,
     title: string,
@@ -59,7 +61,7 @@ export default function ToDoList(props: {todos: {data: TodoItemInterface[]}}) {
             const {data: todos} = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/todo?${selectDBProps(SELECT_TODO_FIELDS)}&${SORT_ORDER}`);
             props.todos.data = todos.data;
             handleClose();
-        } catch(error) {
+        } catch(error: any) {
             setServerErrors(
                 error.data.errors.map((error: {message: String}) => error.message)
             );
